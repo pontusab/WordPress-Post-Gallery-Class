@@ -5,7 +5,7 @@
 	-webkit-border-radius: 0;
 	border-radius: 0;
 	border-color: #ccc;
-	padding: 40px 20px;
+	height: 300px;
 }
 
 #gallery .handlediv,
@@ -31,3 +31,63 @@
 #gallery .button {
 	text-align: center;
 }
+
+#gallery .drag-drop-inside {
+	width: 100%;
+}
+
+#gallery #drag-drop-area {
+	width: 100%;
+	height: 180px;
+	padding: 120px 0 0;
+	position: relative;
+	z-index: 20;
+	border: none;
+}
+
+#gallery .overlay {
+	width: 100%;
+	height: 100%;
+	background: #000;
+	position: absolute;
+	left: 0;
+	top: 0;
+	display: none;
+}
+
+#gallery .drag-over .overlay {
+	display: block;;
+}
+
+#gallery .dragover {
+	background: blue;
+}
+
+#gallery .drag-drop .drag-drop-inside,
+#gallery .inside {
+	margin: 0;
+	padding: 0;
+}
+
+#gallery .media-router {
+	top: 10px;
+}
+
+#gallery .panel {
+	display: none;
+}
+
+#gallery .panel.active {
+	display: block;
+}
+
+#gallery .header {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 40px;
+	border-bottom: 1px solid #dfdfdf;
+	box-shadow: 0 4px 4px -4px rgba(0,0,0,0.1);
+}
+

@@ -1,0 +1,1 @@
+![Alt text](/screenshot.png "WordPress Stats Dashboard")
