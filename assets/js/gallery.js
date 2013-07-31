@@ -15,6 +15,10 @@ jQuery(document).ready(function( $ )
 			.bind('dragover.wp-uploader', function()
 			{ 
 				uploaddiv.addClass('drag-over'); 
+				$('#gallery div[data-panel]').removeClass('active');
+				$('#gallery .media-router a').removeClass('active');
+				$('#gallery a[data-click="1"]').addClass('active');
+				$('#gallery div[data-panel="1"]').addClass('active');
 			})
 			.bind('dragleave.wp-uploader, drop.wp-uploader', function()
 			{ 
@@ -45,7 +49,10 @@ jQuery(document).ready(function( $ )
 			else
 			{
 				// a file was added, you may want to update your DOM here...
-				console.log(file);
+				$('#gallery div[data-panel]').removeClass('active');
+				$('#gallery .media-router a').removeClass('active');
+				$('#gallery a[data-click="2"]').addClass('active');
+				$('#gallery div[data-panel="2"]').addClass('active');
 			}
 		});
 
@@ -53,11 +60,18 @@ jQuery(document).ready(function( $ )
 		up.start();
 	});
 
-	// a file was uploaded
-	uploader.bind('FileUploaded', function( up, file, response ) 
+	uploader.bind('UploadProgress', function(up, file) 
 	{
-    	// this is your ajax response, update the DOM with it or something...
-    	console.log(response);
+		//$('#' + file.id + " b").html(file.percent + "%");
+	});
+
+
+
+	// a file was uploaded
+	uploader.bind('FileUploaded', function(up, file, response) 
+	{
+	    src = response['response'];	   
+	    $('#gallery .scrollable ul').prepend('<li><img src="'+ src +'"/></li>');
 	});
 
 
@@ -66,19 +80,13 @@ jQuery(document).ready(function( $ )
 	{
 		e.preventDefault();
 
-		// var selected;
-		// var clicked  = $(this).data('click');
-		
-		// $('#gallery .media-router a').each(function() 
-		// {
-		// 	if( $(this).hasClass('active') )
-		// 	{
-		// 		var selected = $(this).data('click');
-		// 	}
-		// });
+		var clicked = $(this).data('click');
 
-		// console.log(selected);
-		// $('#gallery div[data-panel='+ clicked +']').addClass('active');
+		$('#gallery div[data-panel]').removeClass('active');
+		$('#gallery .media-router a').removeClass('active');
+		
+		$(this).addClass('active');
+		$('#gallery div[data-panel='+ clicked +']').addClass('active');
 
 	});
 });  

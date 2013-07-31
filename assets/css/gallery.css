@@ -5,8 +5,11 @@
 	-webkit-border-radius: 0;
 	border-radius: 0;
 	border-color: #ccc;
-	height: 300px;
+	height: 320px;
+	float: left;
+	width: 100%;
 }
+
 
 #gallery .handlediv,
 #gallery .hndle {
@@ -26,6 +29,7 @@
 	box-shadow: 0 0 0 transparent;
 	background: transparent;
 	cursor: default;
+	padding: 95px 0 10px 0;
 }
 
 #gallery .button {
@@ -38,12 +42,23 @@
 
 #gallery #drag-drop-area {
 	width: 100%;
-	height: 180px;
-	padding: 120px 0 0;
-	position: relative;
-	z-index: 20;
+	height: 280px;
 	border: none;
+	padding: 40px 0 0;
 }
+
+#gallery .drag-over .overlay {
+    content: '';
+    position: absolute;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(19,80,113,0.9);
+    display: none;
+}
+
 
 #gallery .overlay {
 	width: 100%;
@@ -53,10 +68,6 @@
 	left: 0;
 	top: 0;
 	display: none;
-}
-
-#gallery .drag-over .overlay {
-	display: block;;
 }
 
 #gallery .dragover {
@@ -79,6 +90,7 @@
 
 #gallery .panel.active {
 	display: block;
+	padding: 0 20px 20px 20px;
 }
 
 #gallery .header {
@@ -91,3 +103,43 @@
 	box-shadow: 0 4px 4px -4px rgba(0,0,0,0.1);
 }
 
+
+#gallery ul {
+	margin: 0;
+	width: 100%;
+	height: 100%;
+}
+
+#gallery li {
+	margin: 0% 1% 1% 1%;
+	float: left;
+	width: 120px;
+	height: 120px;
+	position: relative;
+	display: block;
+}
+
+#gallery li:after {
+	content: '';
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+	overflow: hidden;
+}
+
+#gallery .scrollable {
+	overflow: auto;
+	height: 200px;
+	margin-top: 20px;
+}
+
+
+#gallery img {
+	width: 120px;
+	height: 120px;
+	display: block;
+}

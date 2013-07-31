@@ -6,7 +6,6 @@ Version: 0.1
 Author: Pontus Abrahamsson
 */
  
-
 class WPgallery
 {
 	public $post_type;
@@ -20,12 +19,14 @@ class WPgallery
 		add_action( 'add_meta_boxes', array( &$this, 'add_meta_boxes' ) );
 		add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_scripts') );
 		add_action( 'admin_footer', array( &$this, 'upload_script' ) );
-		add_action( 'wp_ajax_photo_gallery_upload', array( &$this, 'handle_upload' ) );
+		add_action( 'wp_ajax_gallery_upload', array( &$this, 'handle_upload' ) );
 	}
 
 
 	public static function upload_script()
 	{
+		global $post;
+
 		$plupload = array(
 		    'runtimes'            => 'html5,silverlight,flash,html4',
 		    'browse_button'       => 'plupload-browse-button',
@@ -43,8 +44,9 @@ class WPgallery
 		 
 		    // additional post data to send to our ajax hook
 		    'multipart_params'    => array(
-		    '_ajax_nonce' 		  => wp_create_nonce( 'photo-upload' ),
-		    'action'      		  => 'photo_gallery_upload',            // the ajax action name
+			    '_ajax_nonce' 		  => wp_create_nonce( 'photo-upload' ),
+			    'action'      		  => 'gallery_upload',            // the ajax action name,
+			    'post_id'			  => $post->ID
 		    ),
 		);
 		 
@@ -88,30 +90,49 @@ class WPgallery
 
 	public function meta_data()
 	{
-		$output = '<div id="plupload-upload-ui" class="hide-if-no-js">';
+		global $post;
+		$attachments = get_posts( array( 
+			'post_type'      => 'attachment', 
+			'posts_per_page' => -1, 
+			'post_parent'    => $post->ID 
+		));
+
+		$output = '<div id="plupload-upload-ui" class="hide-if-no-js clearfix">';
 
 			$output .= '<div class="header">';
 				$output .= '<div class="media-router">';
-					$output .= '<a href="#" data-click="1" class="media-menu-item active">Upload Files</a>';
-					$output .= '<a href="#" data-click="2" class="media-menu-item">Attached Images</a>';
+					$output .= '<a href="#" data-click="1" class="media-menu-item active">'. __('Upload Files') .'</a>';
+					$output .= '<a href="#" data-click="2" class="media-menu-item">'. __('Attached Images') .'</a>';
 				$output .= '</div>';
 			$output .= '</div>';
 
 			$output .= '<div id="drag-drop-area">';
 	     		$output .= '<div data-panel="1" class="panel active">';
+
 	       			$output .= '<div class="drag-drop-inside">';
 	        			$output .= '<h3>'. __( 'Drop files anywhere to upload' ) .'</h3>';
 	        			$output .= '<p class="drag-drop-buttons">';
 	        			$output .= '<input id="plupload-browse-button" type="button" value="'. __('Select Files') .'" class="browser button button-hero" />';
 	        			$output .= '</p>';
 	      			$output .= '</div>';
+
 	     		$output .= '</div>';
 
-	     		$output .= '<div data-panel="2" class="panel">';
-	     			$output .= 'wefwf';
+	     		$output .= '<div data-panel="2" class="panel scrollable">';
+	     			
+	     			$output .= '<ul>';
+
+	     				foreach( $attachments as $attachment )
+	     				{
+		     				$output .= '<li attachment-id="'. $attachment->ID .'">';
+		     					$output .= wp_get_attachment_image( $attachment->ID, array( 120, 120 ) );
+		     				$output .= '</li>';
+		     			}
+
+	     			$output .= '</ul>';
+
 	     		$output .= '</div>';
 
-	     		$output .= '<div class="overlay"></div>';
 	  		$output .= '</div>';
 	  	$output .= '</div>';
 
@@ -121,13 +142,32 @@ class WPgallery
 
 	public function handle_upload()
 	{
-		check_ajax_referer( 'photo-upload' );
+		$post_id = $_REQUEST['post_id'];
+		$saved   = get_post_meta( $post_id, '_gallery', true ); 
+		$file 	 = $_FILES['async-upload'];
+
+		$file_attr  = wp_handle_upload( $file, array(
+			'test_form' => true,
+			'action'    => 'gallery_upload'
+		));
+
+		$attachment = array(
+			'post_mime_type' => $file_attr['type'],
+			'post_title'     => preg_replace( '/\.[^.]+$/', '', basename( $file['name'] ) ),
+			'post_content'   => '',
+			'post_status'    => 'inherit'
+		);
+
+		// Adds file as attachment to WordPress
+		$id = wp_insert_attachment( $attachment, $file_attr['file'], $post_id );
 		
-		$status = wp_handle_upload( $_FILES['async-upload'], array( 
-		    'test_form' => true, 
-		    'action' 	=> 'photo_gallery_upload' 
-		)); 
-		
+		if( !is_wp_error( $id ) )
+		{
+			wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $file_attr['file'] ) );
+
+			echo $file_attr['url'];
+		}
+	
 		exit;
 	}
 }
