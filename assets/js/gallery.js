@@ -89,4 +89,104 @@ jQuery(document).ready(function( $ )
 		$('#gallery div[data-panel='+ clicked +']').addClass('active');
 
 	});
+
+	$('#gallery .delete-wrap ul li').click( function(e) 
+	{
+		e.preventDefault();
+
+		$('#gallery .delete').removeClass('active');
+		$('#gallery .delete').addClass('active');
+		
+		$(this).toggleClass('active');
+
+		var ids = [];
+
+		$('#gallery .delete-wrap ul li.active').each( function(i) 
+		{
+			var id = $(this).data('id');
+			ids[i] = id;
+		});
+
+		$('#gallery .delete a').attr('data-ids', ids);
+	});
+
+
+	$('#gallery .delete a').click( function(e) 
+	{
+		$('#gallery .delete').removeClass('active');
+		
+		$('#gallery .delete-wrap ul li.active').each( function()
+		{
+			$(this).removeClass('active');
+			$('#gallery .add-wrap ul').prepend(this);
+		});
+
+	
+		var ids = $(this).data('ids');
+		$.ajax(
+		{
+		    url: ajaxurl,
+		    type: 'POST',
+		    async: true,
+		    cache: false,
+		    dataType: 'json',
+		    data: {
+		        action: 'remove_attachment',
+		        ids: ids,
+		        post_id: $('#post_ID').val()
+		    }
+		});
+	});
+
+
+
+
+	// Add
+
+	$('#gallery .add-wrap ul li').click( function(e) 
+	{
+		e.preventDefault();
+
+		$('#gallery .add').removeClass('active');
+		$('#gallery .add').addClass('active');
+		
+		$(this).toggleClass('active');
+
+		var ids = [];
+
+		$('#gallery .add-wrap ul li.active').each( function(i) 
+		{
+			var id = $(this).data('id');
+			ids[i] = id;
+		});
+
+		$('#gallery .add a').attr('data-ids', ids);
+	});
+
+	$('#gallery .add a').click( function(e) 
+	{
+		$('#gallery .add').removeClass('active');
+		
+		$('#gallery .add-wrap ul li.active').each( function()
+		{
+			$(this).removeClass('active');
+			$('#gallery .delete-wrap ul').prepend(this);
+		});
+
+		var ids = $(this).data('ids');
+
+		$.ajax(
+		{
+		    url: ajaxurl,
+		    type: 'POST',
+		    async: true,
+		    cache: false,
+		    dataType: 'json',
+		    data: {
+		        action: 'add_attachment',
+		        ids: ids,
+		        post_id: $('#post_ID').val()
+		    }
+		});
+	});
 });  

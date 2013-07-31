@@ -11,7 +11,7 @@ class WPgallery
 	public $post_type;
 	public $_key;
 
-	public function __construct( $post_type, $_key = '_wpgallery' )
+	public function __construct( $post_type, $_key = '_gallery' )
 	{
 		$this->post_type = $post_type;
 		$this->_key      = $_key;
@@ -20,6 +20,8 @@ class WPgallery
 		add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_scripts') );
 		add_action( 'admin_footer', array( &$this, 'upload_script' ) );
 		add_action( 'wp_ajax_gallery_upload', array( &$this, 'handle_upload' ) );
+		add_action( 'wp_ajax_remove_attachment', array( &$this, 'remove_attacment' ) );
+		add_action( 'wp_ajax_add_attachment', array( &$this, 'add_attacment' ) );
 	}
 
 
@@ -60,8 +62,11 @@ class WPgallery
 		wp_register_style( 'gallery-css', plugins_url( '/assets/css/gallery.css', __FILE__ ) );
 		wp_register_script( 'gallery-js', plugins_url( '/assets/js/gallery.js', __FILE__ ) );
 
+		wp_enqueue_script( 'jquery-ui-draggable' );
+		wp_enqueue_script( 'jquery-ui-sortable' );
         wp_enqueue_style( 'gallery-css' );
         wp_enqueue_script( 'gallery-js' );
+
         ?>
 
         <script type="text/javascript">
@@ -74,40 +79,45 @@ class WPgallery
 
 	public function add_meta_boxes()
 	{
-		if( is_array( $this->post_type ) ) 
-		{
-			foreach( $this->post_type as $type ) 
-			{
-				add_meta_box( 'gallery', __( 'Gallery' ), array( &$this, 'meta_data' ), $type, 'normal', 'high' );
-			}
-		}
-		else
-		{
-			add_meta_box( 'gallery', __( 'Gallery' ), array( &$this, 'meta_data' ), $this->post_type, 'normal', 'high' );
-		}
+		add_meta_box( 'gallery', __( 'Gallery' ), array( &$this, 'meta_data' ), $this->post_type, 'normal', 'low' );
 	}
 
 
 	public function meta_data()
 	{
 		global $post;
-		$attachments = get_posts( array( 
-			'post_type'      => 'attachment', 
-			'posts_per_page' => -1, 
-			'post_parent'    => $post->ID 
+		$attachments = get_post_meta( $post->ID, $this->_key, true ); 
+		
+		$upploaded   = get_posts( array(
+			'post_type'		 => 'attachment',
+			'posts_per_page' => -1,
+			'exclude'		 => $attachments
 		));
+
+		if( !$attachments )
+		{
+			$attachments = array();
+		}
+
+		//ksort( $attachments );
+		ksort( $attachments );
 
 		$output = '<div id="plupload-upload-ui" class="hide-if-no-js clearfix">';
 
 			$output .= '<div class="header">';
 				$output .= '<div class="media-router">';
-					$output .= '<a href="#" data-click="1" class="media-menu-item active">'. __('Upload Files') .'</a>';
-					$output .= '<a href="#" data-click="2" class="media-menu-item">'. __('Attached Images') .'</a>';
+					$output .= '<a href="#" data-click="1" class="media-menu-item '.( empty( $attachments ) ? 'active' : null ).'">'. __('Upload Files') .'</a>';
+					$output .= '<a href="#" data-click="2" class="media-menu-item '.( !empty( $attachments ) ? 'active' : null ).'">'. __('Attached Images') .'</a>';
+
+					$output .= '<a href="#" data-click="3" class="media-menu-item">'. __('Media Library') .'</a>';
 				$output .= '</div>';
 			$output .= '</div>';
 
 			$output .= '<div id="drag-drop-area">';
-	     		$output .= '<div data-panel="1" class="panel active">';
+
+				// Start Upload
+
+	     		$output .= '<div data-panel="1" class="panel upload-wrap '.( empty( $attachments ) ? 'active' : null ).'">';
 
 	       			$output .= '<div class="drag-drop-inside">';
 	        			$output .= '<h3>'. __( 'Drop files anywhere to upload' ) .'</h3>';
@@ -118,32 +128,146 @@ class WPgallery
 
 	     		$output .= '</div>';
 
-	     		$output .= '<div data-panel="2" class="panel scrollable">';
+	     		// End Upload
+
+	     		// Start Delete
+
+	     		$output .= '<div data-panel="2" class="panel scrollable delete-wrap '.( !empty( $attachments ) ? 'active' : null ).'">';
 	     			
 	     			$output .= '<ul>';
 
-	     				foreach( $attachments as $attachment )
+	     				foreach( $attachments as $key => $value )
 	     				{
-		     				$output .= '<li attachment-id="'. $attachment->ID .'">';
-		     					$output .= wp_get_attachment_image( $attachment->ID, array( 120, 120 ) );
+		     				$output .= '<li data-id="'. $value .'">';
+		     					$output .= wp_get_attachment_image( $value, array( 120, 120 ) );
 		     				$output .= '</li>';
 		     			}
 
 	     			$output .= '</ul>';
 
+	     			$output .= '<div class="delete">';
+			  			$output .= '<a class="button button-primary button-large" href="#">'. __('Delete Image') .'</a>';
+			  		$output .= '</div>';
+
 	     		$output .= '</div>';
 
+	     		// End Delete
+
+	     		// Start add
+
+	     		$output .= '<div data-panel="3" class="panel scrollable add-wrap">';
+	     			$output .= '<ul>';
+	     				
+		     			foreach( $upploaded as $image )
+		     			{
+		     				$output .= '<li data-id="'. $image->ID .'">';
+		     					$output .= wp_get_attachment_image( $image->ID, array( 120, 120 ) );
+		     				$output .= '</li>';
+		     			}
+
+		     		$output .= '</ul>';
+
+		     		$output .= '<div class="add">';
+			  			$output .= '<a class="button button-primary button-large" href="#">'. __('Attatch Image(s)') .'</a>';
+			  		$output .= '</div>';
+	       			
+	     		$output .= '</div>';
+
+	     		// End add
+
 	  		$output .= '</div>';
+
 	  	$output .= '</div>';
 
   		echo $output;
 	}
 
 
+	public function remove_attacment()
+	{
+		$post_id 	 = $_REQUEST['post_id'];
+		$attachments = isset( $_POST['ids'] ) ? $_POST['ids'] : null;
+		$saved   	 = get_post_meta( $post_id, $this->_key, true ); 
+
+		if( count( $attachments ) )
+		{
+			$attachments = explode( ',', $attachments );
+
+			foreach( $attachments as $attachment )
+			{
+				unset( $saved[ array_search( $attachment, $saved ) ] );
+
+				//wp_delete_attachment( $attachment, true );
+			}
+
+			if( count( $saved ) > 0 )
+			{
+				update_post_meta( $post_id, $this->_key, $saved );
+			}
+			else
+			{
+				delete_post_meta( $post_id, $this->_key );
+			}
+		}
+
+		exit;
+	}
+
+	static public function images( $size, $li = true )
+	{
+		global $post;
+
+		$attachments = get_post_meta( $post->ID, '_gallery', true ); 
+		if( !$attachments )
+		{
+			$attachments = array();
+		}
+
+		ksort( $attachments );
+
+	
+		$output = '';
+
+		if( $li )
+		{
+			foreach( $attachments as $attachment )
+			{
+				$output .= '<li>';
+					$output .= wp_get_attachment_image( $attachment, $size );
+				$output .= '</li>';
+			}
+		}
+
+		return $output;
+	}
+
+	public function add_attacment()
+	{
+		$post_id 	 = $_REQUEST['post_id'];
+		$attachments = isset( $_POST['ids'] ) ? $_POST['ids'] : null;
+		$saved   	 = get_post_meta( $post_id, $this->_key, true ); 
+
+		if( count( $attachments ) )
+		{
+			$attachments = explode( ',', $attachments );
+
+			foreach( $attachments as $attachment )
+			{
+				$saved[microtime()] = $attachment;
+			}
+
+			update_post_meta( $post_id, $this->_key, $saved );
+
+		}
+
+		exit;
+	}
+
+
 	public function handle_upload()
 	{
 		$post_id = $_REQUEST['post_id'];
-		$saved   = get_post_meta( $post_id, '_gallery', true ); 
+		$saved   = get_post_meta( $post_id, $this->_key, true ); 
 		$file 	 = $_FILES['async-upload'];
 
 		$file_attr  = wp_handle_upload( $file, array(
@@ -164,6 +288,9 @@ class WPgallery
 		if( !is_wp_error( $id ) )
 		{
 			wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $file_attr['file'] ) );
+
+			$saved[microtime()] = $id;
+			update_post_meta( $post_id, $this->_key, $saved );
 
 			echo $file_attr['url'];
 		}

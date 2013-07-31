@@ -8,6 +8,7 @@
 	height: 320px;
 	float: left;
 	width: 100%;
+	position: relative;
 }
 
 
@@ -112,11 +113,43 @@
 
 #gallery li {
 	margin: 0% 1% 1% 1%;
+	padding: 4px;
 	float: left;
 	width: 120px;
 	height: 120px;
 	position: relative;
 	display: block;
+	cursor: pointer;
+}
+
+#gallery li.active {
+	background: #1e8cbe;
+}
+
+#gallery .delete,
+#gallery .add {
+	width: 100%;
+	background: #fff;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	z-index: 100;
+	height: 50px;
+	border-top: 1px solid #dfdfdf;
+	overflow: hidden;
+	box-shadow: 0 -4px 4px -4px rgba(0,0,0,0.1);
+	display: none;
+}
+
+#gallery .delete.active,
+#gallery .add.active {
+	display: block;
+}
+
+#gallery .delete .button,
+#gallery .add .button {
+	float: right;
+	margin: 10px 10px 0 0;
 }
 
 #gallery li:after {
