@@ -60,7 +60,7 @@ class WPgallery
 	{
 		wp_enqueue_script( 'plupload-all' );
 		wp_register_style( 'gallery-css', plugins_url( '/assets/css/gallery.css', __FILE__ ) );
-		wp_register_script( 'gallery-js', plugins_url( '/assets/js/gallery.js', __FILE__ ) );
+		wp_register_script( 'gallery-js', plugins_url( '/assets/js/gallery-min.js', __FILE__ ) );
 
 		wp_enqueue_script( 'jquery-ui-draggable' );
 		wp_enqueue_script( 'jquery-ui-sortable' );
@@ -98,9 +98,6 @@ class WPgallery
 		{
 			$attachments = array();
 		}
-
-		//ksort( $attachments );
-		ksort( $attachments );
 
 		$output = '<div id="plupload-upload-ui" class="hide-if-no-js clearfix">';
 
@@ -189,15 +186,13 @@ class WPgallery
 		$attachments = isset( $_POST['ids'] ) ? $_POST['ids'] : null;
 		$saved   	 = get_post_meta( $post_id, $this->_key, true ); 
 
-		if( count( $attachments ) )
+		if( count( $attachments ) > 0 )
 		{
 			$attachments = explode( ',', $attachments );
 
 			foreach( $attachments as $attachment )
 			{
 				unset( $saved[ array_search( $attachment, $saved ) ] );
-
-				//wp_delete_attachment( $attachment, true );
 			}
 
 			if( count( $saved ) > 0 )
@@ -222,9 +217,6 @@ class WPgallery
 		{
 			$attachments = array();
 		}
-
-		ksort( $attachments );
-
 	
 		$output = '';
 
@@ -243,21 +235,41 @@ class WPgallery
 
 	public function add_attacment()
 	{
-		$post_id 	 = $_REQUEST['post_id'];
-		$attachments = isset( $_POST['ids'] ) ? $_POST['ids'] : null;
-		$saved   	 = get_post_meta( $post_id, $this->_key, true ); 
+		$order    	 = isset( $_POST['order'] ) ? $_POST['order'] : null;
+		$post_id  	 = $_REQUEST['post_id'];
+		$saved    	 = get_post_meta( $post_id, $this->_key, true ); 
 
-		if( count( $attachments ) )
+		if( !$saved )
 		{
-			$attachments = explode( ',', $attachments );
+			$saved = array();
+		}
 
-			foreach( $attachments as $attachment )
+		$attachments = isset( $_POST['ids'] ) ? $_POST['ids'] : null;
+
+		if( count( $order ) > 0 )
+		{
+			update_post_meta( $post_id, $this->_key, $order );
+		}
+		else
+		{
+			if( $attachments )
 			{
-				$saved[microtime()] = $attachment;
+				$attachments = explode( ',', $attachments );
+
+				foreach( $attachments as $attachment )
+				{
+					array_unshift( $saved, $attachment );
+				}
 			}
 
-			update_post_meta( $post_id, $this->_key, $saved );
-
+			if( count( $saved ) > 0 )
+			{
+				update_post_meta( $post_id, $this->_key, $saved );
+			}
+			else
+			{
+				delete_post_meta( $post_id, $this->_key );
+			}
 		}
 
 		exit;
@@ -289,7 +301,8 @@ class WPgallery
 		{
 			wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $file_attr['file'] ) );
 
-			$saved[microtime()] = $id;
+			array_unshift( $saved, $id );
+
 			update_post_meta( $post_id, $this->_key, $saved );
 
 			echo $file_attr['url'];

@@ -147,7 +147,6 @@ jQuery(document).ready(function( $ )
 	{
 		e.preventDefault();
 
-		$('#gallery .add').removeClass('active');
 		$('#gallery .add').addClass('active');
 		
 		$(this).toggleClass('active');
@@ -166,7 +165,13 @@ jQuery(document).ready(function( $ )
 	$('#gallery .add a').click( function(e) 
 	{
 		$('#gallery .add').removeClass('active');
-		
+		$('#gallery .add-wrap').removeClass('active');
+		$('#gallery a[data-click]').removeClass('active');
+
+		$('#gallery .delete-wrap').addClass('active');
+		$('#gallery .delete-wrap').addClass('active');
+		$('#gallery a[data-click="2"]').addClass('active');
+
 		$('#gallery .add-wrap ul li.active').each( function()
 		{
 			$(this).removeClass('active');
@@ -189,4 +194,35 @@ jQuery(document).ready(function( $ )
 		    }
 		});
 	});
+
+
+	$('.scrollable ul').sortable( 
+	{
+        update: function(event, ui) 
+        {
+        	var ids = [];
+
+			$(this).children('li').each(function(i) 
+			{
+				var id = $(this).data('id');
+				ids[i] = id;
+			});                                    
+			
+			$.ajax(
+			{
+			    url: ajaxurl,
+			    type: 'POST',
+			    async: true,
+			    cache: false,
+			    dataType: 'json',
+			    data: {
+			        action: 'add_attachment',
+			        order: ids,
+			        post_id: $('#post_ID').val()
+			    }
+			});
+        }
+    });
+	
+
 });  
