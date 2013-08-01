@@ -236,25 +236,39 @@ class WPgallery
 
 	public function update_meta( $post_id, $key, $saved )
 	{
-		global $polylang;
-		foreach( $polylang->get_languages_list() as $language ) 
+		if( class_exists('Polylang_Base') )
 		{
-			$id = $polylang->get_translation( 'post', $post_id, $language );
+			global $polylang;
+			foreach( $polylang->get_languages_list() as $language ) 
+			{
+				$id = $polylang->get_translation( 'post', $post_id, $language );
 
-			update_post_meta( $id, $key, $saved );
-		}	
+				update_post_meta( $id, $key, $saved );
+			}	
+		}
+		else
+		{
+			update_post_meta( $post_id, $key, $saved );
+		}
 	}
 
 
 	public function delete_meta( $post_id, $key )
 	{
-		global $polylang;
-		foreach( $polylang->get_languages_list() as $language ) 
+		if( class_exists('Polylang_Base') )
 		{
-			$id = $polylang->get_translation( 'post', $post_id, $language );
+			global $polylang;
+			foreach( $polylang->get_languages_list() as $language ) 
+			{
+				$id = $polylang->get_translation( 'post', $post_id, $language );
 
-			delete_post_meta( $id, $key );
+				delete_post_meta( $id, $key );
+			}
 		}	
+		else
+		{
+			delete_post_meta( $post_id, $key );
+		}
 	}
 
 
