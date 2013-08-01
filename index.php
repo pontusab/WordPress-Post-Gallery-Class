@@ -197,11 +197,11 @@ class WPgallery
 
 			if( count( $saved ) > 0 )
 			{
-				update_post_meta( $post_id, $this->_key, $saved );
+				$this->update_meta( $post_id, $this->_key, $saved );
 			}
 			else
 			{
-				delete_post_meta( $post_id, $this->_key );
+				$this->delete_meta( $post_id, $this->_key );
 			}
 		}
 
@@ -233,6 +233,31 @@ class WPgallery
 		return $output;
 	}
 
+
+	public function update_meta( $post_id, $key, $saved )
+	{
+		global $polylang;
+		foreach( $polylang->get_languages_list() as $language ) 
+		{
+			$id = $polylang->get_translation( 'post', $post_id, $language );
+
+			update_post_meta( $id, $key, $saved );
+		}	
+	}
+
+
+	public function delete_meta( $post_id, $key )
+	{
+		global $polylang;
+		foreach( $polylang->get_languages_list() as $language ) 
+		{
+			$id = $polylang->get_translation( 'post', $post_id, $language );
+
+			delete_post_meta( $id, $key );
+		}	
+	}
+
+
 	public function add_attacment()
 	{
 		$order    	 = isset( $_POST['order'] ) ? $_POST['order'] : null;
@@ -248,7 +273,7 @@ class WPgallery
 
 		if( count( $order ) > 0 )
 		{
-			update_post_meta( $post_id, $this->_key, $order );
+			$this->update_meta( $post_id, $this->_key, $order );
 		}
 		else
 		{
@@ -264,11 +289,11 @@ class WPgallery
 
 			if( count( $saved ) > 0 )
 			{
-				update_post_meta( $post_id, $this->_key, $saved );
+				$this->update_meta( $post_id, $this->_key, $saved );
 			}
 			else
 			{
-				delete_post_meta( $post_id, $this->_key );
+				$this->delete_meta( $post_id, $this->_key );
 			}
 		}
 
@@ -303,11 +328,11 @@ class WPgallery
 
 			array_unshift( $saved, $id );
 
-			update_post_meta( $post_id, $this->_key, $saved );
+			$this->update_meta( $post_id, $this->_key, $saved );
 
 			echo $file_attr['url'];
 		}
-	
+
 		exit;
 	}
 }
