@@ -8,6 +8,7 @@ Follow these steps:
 * Install with in `/wp-content/plugins/`.
 * Add `$page = new WPgallery( 'page' );` to your functions.php.
 * Change 'page' to any post type.
+* To get the attached imaged use: `<?php echo WPgallery::images( $size ); ?>` where size is the same as your own defined sizes or WordPress 'thumbnail' and so on.
 
 ## Screenshots
 
