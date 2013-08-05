@@ -113,6 +113,8 @@ jQuery(document).ready(function( $ )
 
 	$('#gallery .delete a').click( function(e) 
 	{
+		e.preventDefault();
+		
 		$('#gallery .delete').removeClass('active');
 		
 		$('#gallery .delete-wrap ul li.active').each( function()
@@ -164,6 +166,8 @@ jQuery(document).ready(function( $ )
 
 	$('#gallery .add a').click( function(e) 
 	{
+		e.preventDefault();
+
 		$('#gallery .add').removeClass('active');
 		$('#gallery .add-wrap').removeClass('active');
 		$('#gallery a[data-click]').removeClass('active');

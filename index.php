@@ -319,6 +319,12 @@ class WPgallery
 	{
 		$post_id = $_REQUEST['post_id'];
 		$saved   = get_post_meta( $post_id, $this->_key, true ); 
+	
+		if( empty( $saved ) )
+		{
+			$saved = array();
+		}
+
 		$file 	 = $_FILES['async-upload'];
 
 		$file_attr  = wp_handle_upload( $file, array(
