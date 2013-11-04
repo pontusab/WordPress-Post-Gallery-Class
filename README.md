@@ -4,9 +4,9 @@
 Follow these steps:
 
 * [Download the latest release](https://github.com/pontusab/WordPress-Post-Gallery-Class/archive/master.zip).
+* Go to `/wp-content/plugins/` in terminal.
 * Clone the repo: `git clone git://github.com/pontusab/WordPress-Post-Gallery-Class.git`.
-* Install with in `/wp-content/plugins/`.
-* Add `$page = new WPgallery( 'page' );` to your functions.php.
+* Add `new WPgallery( 'page' );` to your functions.php.
 * Change 'page' to any post type.
 * To get the attached imaged use: `<?php echo WPgallery::images( $size ); ?>` where size is the same as your own defined sizes or WordPress 'thumbnail' and so on.
 
