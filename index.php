@@ -18,12 +18,11 @@ class WPgallery
 
 		add_action( 'add_meta_boxes', array( &$this, 'add_meta_boxes' ) );
 		add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_scripts') );
-		add_action( 'admin_footer', array( &$this, 'upload_script' ) );
+		//add_action( 'admin_footer', array( &$this, 'upload_script' ) );
 		add_action( 'wp_ajax_gallery_upload', array( &$this, 'handle_upload' ) );
 		add_action( 'wp_ajax_remove_attachment', array( &$this, 'remove_attacment' ) );
 		add_action( 'wp_ajax_add_attachment', array( &$this, 'add_attacment' ) );
 	}
-
 
 	public static function upload_script()
 	{
@@ -58,30 +57,42 @@ class WPgallery
 
 	public function enqueue_scripts()
 	{
-		wp_enqueue_script( 'plupload-all' );
-		wp_register_style( 'gallery-css', plugins_url( '/assets/css/gallery.css', __FILE__ ) );
-		wp_register_script( 'gallery-js', plugins_url( '/assets/js/gallery-min.js', __FILE__ ) );
+		if($this->is_edit_screen())
+		{
+			wp_enqueue_script( 'plupload-all' );
+			wp_register_style( 'gallery-css', plugins_url( '/assets/css/gallery.css', __FILE__ ) );
+			wp_register_script( 'gallery-js', plugins_url( '/assets/js/gallery-min.js', __FILE__ ) );
 
-		wp_enqueue_script( 'jquery-ui-draggable' );
-		wp_enqueue_script( 'jquery-ui-sortable' );
-        wp_enqueue_style( 'gallery-css' );
-        wp_enqueue_script( 'gallery-js' );
+			wp_enqueue_script( 'jquery-ui-draggable' );
+			wp_enqueue_script( 'jquery-ui-sortable' );
+	        wp_enqueue_style( 'gallery-css' );
+	        wp_enqueue_script( 'gallery-js' );
 
-        ?>
+	        ?>
 
-        <script type="text/javascript">
-			var gallery_settings = <?php echo json_encode( self::upload_script() ); ?>;
-		</script>
+	        <script type="text/javascript">
+				var gallery_settings = <?php echo json_encode( self::upload_script() ); ?>;
+			</script>
 
-        <?php
+	        <?php
+	    }
 	}
 
 
 	public function add_meta_boxes()
 	{
-		add_meta_box( 'gallery', __( 'Gallery' ), array( &$this, 'meta_data' ), $this->post_type, 'normal', 'low' );
+		if($this->is_edit_screen())
+		{
+			add_meta_box( 'gallery', __( 'Gallery' ), array( &$this, 'meta_data' ), $this->post_type, 'normal', 'low' );
+		}
 	}
 
+	private function is_edit_screen()
+	{
+		$screen = get_current_screen();
+
+		return $screen->post_type == $this->post_type;
+	}
 
 	public function meta_data()
 	{
