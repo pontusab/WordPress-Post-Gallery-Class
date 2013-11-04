@@ -18,7 +18,6 @@ class WPgallery
 
 		add_action( 'add_meta_boxes', array( &$this, 'add_meta_boxes' ) );
 		add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_scripts') );
-		//add_action( 'admin_footer', array( &$this, 'upload_script' ) );
 		add_action( 'wp_ajax_gallery_upload', array( &$this, 'handle_upload' ) );
 		add_action( 'wp_ajax_remove_attachment', array( &$this, 'remove_attacment' ) );
 		add_action( 'wp_ajax_add_attachment', array( &$this, 'add_attacment' ) );
